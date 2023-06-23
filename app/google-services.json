@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "1031896855566",
+    "firebase_url": "https://media-4bace-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "media-4bace",
+    "storage_bucket": "media-4bace.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1031896855566:android:5c5512e42fc42c5bb4b85f",
+        "android_client_info": {
+          "package_name": "com.example.media"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1031896855566-gr1411ntoft02anfiqqgq54fugm5mo1v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDaI5tbefQ_3wSjlvidjobBSRcAKneBVMs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1031896855566-gr1411ntoft02anfiqqgq54fugm5mo1v.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

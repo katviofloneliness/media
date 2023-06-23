@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:title="Home"
+        android:id="@+id/home_ampli"
+        android:icon="@drawable/baseline_home_24"/>
+    <item android:title="GPS"
+        android:id="@+id/map"
+        android:icon="@drawable/baseline_navigation_24"/>
+    <item android:title="Sound"
+        android:id="@+id/sound"
+        android:icon="@drawable/baseline_music_note_24"/>
+</menu>

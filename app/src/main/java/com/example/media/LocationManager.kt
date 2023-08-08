@@ -17,6 +17,9 @@ import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest
 import com.google.android.libraries.places.api.net.PlacesClient
+import com.google.firebase.database.FirebaseDatabase
+import java.text.SimpleDateFormat
+import java.util.Locale
 import kotlin.time.Duration.Companion.seconds
 
 class LocationManager(private val context: Context) {
@@ -187,19 +190,13 @@ class LocationManager(private val context: Context) {
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
             return
         }
         placesClient.findCurrentPlace(request)
             .addOnSuccessListener { response ->
                 for (placeLikelihood in response.placeLikelihoods) {
                     val place = placeLikelihood.place
+                    savePlaceTypeToFirebase(place)
                     checkPlaceTypeAndAdjustVolume(place)
                     // Handle the failure case if unable to fetch place details
 /*                    Toast.makeText(
@@ -288,6 +285,35 @@ class LocationManager(private val context: Context) {
             interval = locationInterval
             fastestInterval = locationInterval
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        }
+    }
+    private fun savePlaceTypeToFirebase(place: Place) {
+        val databaseReference = FirebaseDatabase.getInstance().getReference("places")
+
+        val placeType = place.types.firstOrNull() // Get the first place type, you might want to handle multiple types differently
+
+        if (placeType != null) {
+            val placeValues = HashMap<String, Any>()
+            placeValues["placeType"] = placeType.name // Save the place type to Firebase
+
+            val currentTime = System.currentTimeMillis()
+            val dateFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+            val formattedTime = dateFormat.format(currentTime)
+
+            placeValues["requestTime"] = formattedTime // Save the formatted time
+
+            // Generate a unique key for the request
+            val requestKey = databaseReference.push().key
+
+            if (requestKey != null) {
+                // Save the place type and request time information to Firebase Realtime Database
+                val requestReference = databaseReference.child(requestKey)
+                requestReference.setValue(placeValues)
+
+                // Keep a reference to the place under its name
+                val placeReference = requestReference.child("place")
+                placeReference.setValue(place.name)
+            }
         }
     }
 }

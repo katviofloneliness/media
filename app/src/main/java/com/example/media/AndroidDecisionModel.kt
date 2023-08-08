@@ -1,6 +1,7 @@
 package com.example.media
 
 import android.content.Context
+import android.media.AudioManager
 import android.widget.Toast
 
 class AndroidDecisionModel
@@ -13,28 +14,50 @@ class AndroidDecisionModel
 
     override fun checkAmplitude(amplitudeDB: Double) {
         try {
+            val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
             if (amplitudeDB <= thresholdDB[0]) controllerDND.enableDndMode()
-            else if (amplitudeDB > thresholdDB[0] && amplitudeDB <= thresholdDB[1])
-                Toast.makeText(
+            else if (amplitudeDB > thresholdDB[0] && amplitudeDB <= thresholdDB[2]){
+       /*         Toast.makeText(
                     context.applicationContext,
-                    "30-50 dB range",
+                    "40-80 dB range",
                     Toast.LENGTH_SHORT
-                ).show()
-            else if (amplitudeDB > thresholdDB[1] && amplitudeDB <= thresholdDB[2])
-                Toast.makeText(
-                    context.applicationContext,
-                    "50-80 dB range",
-                    Toast.LENGTH_SHORT
-                ).show()
-            else if (amplitudeDB > thresholdDB[2]) controllerDND.disableDndMode()
+                ).show()*/
+                controllerDND.disableDndMode()
+                setVolumeLevel(audioManager, 0.5f)
+            }
+            else if (amplitudeDB > thresholdDB[2]){
+                controllerDND.disableDndMode()
+                setVolumeLevel(audioManager, 1.0f)
 
-            /*            when(amplitudeDB){
-                           in thresholdDB[0]..thresholdDB[1] -> controllerDND.disableDndMode()
-                            thresholdDB[1] ->
-                        }*/
+            }
 
         } catch (e: Exception) {
         }
+    }
+
+    private fun setVolumeLevel(audioManager: AudioManager, volumeLevel: Float) {
+/*        audioManager.ringerMode = if (volumeLevel == 0.0f) {
+            AudioManager.RINGER_MODE_SILENT
+        } else {
+            AudioManager.RINGER_MODE_NORMAL
+        }
+
+        val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_RING)
+        val newVolume = (maxVolume * volumeLevel).toInt()
+        audioManager.setStreamVolume(AudioManager.STREAM_RING, newVolume, 0)*/
+
+        // Adjust Ringtone volume
+        val maxRingVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_RING)
+        val newRingVolume = (maxRingVolume * volumeLevel).toInt()
+        audioManager.setStreamVolume(AudioManager.STREAM_RING, newRingVolume, 0)
+        // Adjust Notification volume
+        val maxNotificationVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION)
+        val newNotificationVolume = (maxNotificationVolume * volumeLevel).toInt()
+        audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, newNotificationVolume, 0)
+        // Adjust Media volume
+        val maxMediaVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+        val newMediaVolume = (maxMediaVolume * volumeLevel).toInt()
+        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newMediaVolume, 0)
     }
 }
 

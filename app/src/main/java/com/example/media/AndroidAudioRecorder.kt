@@ -9,6 +9,9 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import java.io.File
 import java.io.FileOutputStream
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import kotlin.math.log10
 
 class AndroidAudioRecorder(
@@ -48,10 +51,14 @@ class AndroidAudioRecorder(
         val amplitudeRef = database.getReference("amplitudes")
         val amplitudeKey = amplitudeRef.push().key
         //recorder?.maxAmplitude
+
+        val currentTime = System.currentTimeMillis()
+        val amplitudeTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date(currentTime))
+
         var dB = 20 * log10(recorder?.maxAmplitude!!.toDouble() / samplingRate)
-        val amplitudeData = hashMapOf("amplitudeDB" to dB)
+        val amplitudeData = hashMapOf("amplitudeDB" to dB, "time" to amplitudeTime)
         amplitudeKey?.let { key ->
-            amplitudeRef.child(key).setValue(dB)
+            amplitudeRef.child(key).setValue(amplitudeData)
         }
         //return recorder?.maxAmplitude.toString()
 

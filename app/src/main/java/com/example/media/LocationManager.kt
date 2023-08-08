@@ -20,6 +20,9 @@ import com.google.android.libraries.places.api.net.PlacesClient
 import kotlin.time.Duration.Companion.seconds
 
 class LocationManager(private val context: Context) {
+    private val controllerDND by lazy {
+        AndroidDND(context)
+    }
 
     private val lowVolumeList = listOf(Place.Type.LIBRARY, Place.Type.SCHOOL, Place.Type.CHURCH, Place.Type.UNIVERSITY
     )
@@ -108,19 +111,19 @@ class LocationManager(private val context: Context) {
                     ).show()
                     return@addOnSuccessListener
                 }
-                adjustVolume(false)
+                controllerDND.disableDndMode()
             }
             .addOnFailureListener { exception ->
                 // Handle the failure case if unable to fetch place details
-                adjustVolume(false)
+                controllerDND.enableDndMode()
             }
     }
 
-    private fun adjustVolume(isInLibrary: Boolean) {
+/*    private fun adjustVolume(isInLibrary: Boolean) {
         val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
         if (isInLibrary) {
-            audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
+            controllerDND.enableDndMode()
         } else {
             audioManager.ringerMode = AudioManager.RINGER_MODE_NORMAL
             audioManager.setStreamVolume(
@@ -129,7 +132,7 @@ class LocationManager(private val context: Context) {
                 0
             )
         }
-    }
+    }*/
 
     private fun setVolumeLevel(audioManager: AudioManager, volumeLevel: Float) {
         audioManager.ringerMode = if (volumeLevel == 0.0f) {
@@ -138,9 +141,17 @@ class LocationManager(private val context: Context) {
             AudioManager.RINGER_MODE_NORMAL
         }
 
-        val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_RING)
-        val newVolume = (maxVolume * volumeLevel).toInt()
-        audioManager.setStreamVolume(AudioManager.STREAM_RING, newVolume, 0)
+        val maxRingVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_RING)
+        val newRingVolume = (maxRingVolume * volumeLevel).toInt()
+        audioManager.setStreamVolume(AudioManager.STREAM_RING, newRingVolume, 0)
+        // Adjust Notification volume
+        val maxNotificationVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION)
+        val newNotificationVolume = (maxNotificationVolume * volumeLevel).toInt()
+        audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, newNotificationVolume, 0)
+        // Adjust Media volume
+        val maxMediaVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+        val newMediaVolume = (maxMediaVolume * volumeLevel).toInt()
+        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newMediaVolume, 0)
     }
 
     private fun checkPlaceTypeAndAdjustVolume(place: Place) {
@@ -167,7 +178,7 @@ class LocationManager(private val context: Context) {
                 setVolumeLevel(audioManager, 0.0f) // Set volume to silent for low volume places
             }
             else -> {
-                setVolumeLevel(audioManager, 1.0f) // Reset volume to normal for other places
+                setVolumeLevel(audioManager, 0.5f) // Reset volume to 50% for other places
             }
         }
     }

@@ -16,10 +16,10 @@ class Home : Fragment() {
     companion object {
         private const val ARG_AMPLITUDES = "amplitudes"
 
-        fun newInstance(amplitudes: List<Float>): Home {
+        fun newInstance(amplitudes: List<AmplitudeData>): Home {
             val fragment = Home()
             val args = Bundle()
-            args.putFloatArray(ARG_AMPLITUDES, amplitudes.toFloatArray())
+            args.putParcelableArray(ARG_AMPLITUDES, amplitudes.toTypedArray())
             fragment.arguments = args
             return fragment
         }
@@ -28,11 +28,11 @@ class Home : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_home, container, false)
         val text = view.findViewById<TextView>(R.id.home_txt)
-        val amplitudes = arguments?.getFloatArray(ARG_AMPLITUDES)?.toList()
+        val amplitudes = arguments?.getParcelableArray(ARG_AMPLITUDES) as? Array<AmplitudeData>?
         val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerViewAmplitudes)
 
         if (amplitudes != null && amplitudes.isNotEmpty()) {
-            recyclerView.adapter = AmplitudeAdapter(amplitudes)
+            recyclerView.adapter = AmplitudeAdapter(amplitudes.toList())
             recyclerView.layoutManager = LinearLayoutManager(context)
             //text.text = amplitudes.joinToString(",") + "test"
         } else {

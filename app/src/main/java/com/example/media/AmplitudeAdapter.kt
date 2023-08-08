@@ -4,7 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 
-class AmplitudeAdapter(private val amplitudes: List<Float>) :
+class AmplitudeAdapter(private val data: List<AmplitudeData>) :
     RecyclerView.Adapter<AmplitudeViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AmplitudeViewHolder {
@@ -14,11 +14,12 @@ class AmplitudeAdapter(private val amplitudes: List<Float>) :
     }
 
     override fun onBindViewHolder(holder: AmplitudeViewHolder, position: Int) {
-        val amplitude = amplitudes[position]
-        holder.Amplitude.text = amplitude.toString() + " dB"
+        val amplitudeData = data[position]
+        holder.Amplitude.text = amplitudeData.toString() + " dB"
+        holder.Time.text = amplitudeData.time
     }
 
     override fun getItemCount(): Int {
-        return amplitudes.size
+        return data.size
     }
 }

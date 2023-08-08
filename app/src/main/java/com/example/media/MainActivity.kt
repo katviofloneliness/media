@@ -46,7 +46,8 @@ class MainActivity : AppCompatActivity(), MainActivityCallback {
 
     private var audioFile: File? = null
 
-    var amplitudeList: MutableList<Float> = mutableListOf()
+    //var amplitudeList: MutableList<Float> = mutableListOf()
+    var amplitudeList: MutableList<AmplitudeData> = mutableListOf()
 
     val database = FirebaseDatabase.getInstance()
     val amplitudesRef = database.getReference("amplitudes")
@@ -114,12 +115,16 @@ class MainActivity : AppCompatActivity(), MainActivityCallback {
                 amplitudeList.clear()
 
                 for (amplitudeSnapshot in dataSnapshot.children) {
-                    val amplitude = amplitudeSnapshot.getValue(Float::class.java)
-                    amplitude?.let {
-                        amplitudeList.add(amplitude)
+                    val amplitude = amplitudeSnapshot.child("amplitudeDB").getValue(Float::class.java)
+                    val time = amplitudeSnapshot.child("time").getValue(String::class.java)
+                    amplitude?.let { amp ->
+                        time?.let { t ->
+                            amplitudeList.add(AmplitudeData(amp, t))
+                        }
                     }
                 }
-
+                val fragment = Home.newInstance(amplitudeList)
+                replaceFragment(fragment)
                 // Pass the amplitudeList to the new fragment for display
                 //val fragment = Home.newInstance(amplitudeList)
                 //replaceFragment(fragment)

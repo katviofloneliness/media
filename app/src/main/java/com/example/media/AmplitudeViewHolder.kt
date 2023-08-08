@@ -6,4 +6,5 @@ import androidx.recyclerview.widget.RecyclerView
 
 class AmplitudeViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val Amplitude: TextView = itemView.findViewById(R.id.textView)
+    val Time: TextView = itemView.findViewById(R.id.textViewTime)
 }

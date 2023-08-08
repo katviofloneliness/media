@@ -6,6 +6,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.EditText
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.FirebaseDatabase
@@ -22,6 +24,8 @@ class Sound : Fragment() {
     private var callback: MainActivityCallback? = null
     val database = FirebaseDatabase.getInstance()
     val amplitudesRef = database.getReference("amplitudes")
+
+    private lateinit var locationManager: LocationManager
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -44,11 +48,13 @@ class Sound : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        locationManager = LocationManager(requireContext())
 
         val record = view.findViewById<Button>(R.id.record)
         val stopRecording = view.findViewById<Button>(R.id.stop_recording)
         val play = view.findViewById<Button>(R.id.play)
         val stop = view.findViewById<Button>(R.id.stop)
+        val interval = view.findViewById<EditText>(R.id.interval)
 
         record.setOnClickListener {
             callback?.onRecordClicked()
@@ -61,6 +67,13 @@ class Sound : Fragment() {
         }
         stop.setOnClickListener {
             callback?.onStopClicked()
+        }
+
+        interval.addTextChangedListener {
+            val newInterval = it.toString().toLongOrNull()
+            if(newInterval != null){
+                locationManager.setLocationInterval(newInterval)
+            }
         }
 
     }

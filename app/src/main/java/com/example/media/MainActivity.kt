@@ -8,8 +8,10 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.fragment.app.Fragment
 import com.example.media.databinding.ActivityMainBinding
+import com.google.android.libraries.places.api.Places
 import com.google.firebase.FirebaseApp
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -31,6 +33,9 @@ class MainActivity : AppCompatActivity(), MainActivityCallback {
     private val controllerDecisionModel by lazy {
         AndroidDecisionModel(applicationContext)
     }
+    private val locationManager by lazy {
+        LocationManager(this)
+    }
     private val REQUEST_CODE = 111
 
     private lateinit var notificationManager: NotificationManager
@@ -49,6 +54,7 @@ class MainActivity : AppCompatActivity(), MainActivityCallback {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         FirebaseApp.initializeApp(this)
+        Places.initialize(this, "AIzaSyDfYhFGAUAT97N405VnXl27My2zd6Oo1eY")
 
         //val record = findViewById<Button>(R.id.record1)
         //var path: String = cacheDir.path+"audio.mp3"
@@ -57,6 +63,8 @@ class MainActivity : AppCompatActivity(), MainActivityCallback {
 
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+
+        locationManager.startLocationUpdates()
 
 
         ActivityCompat.requestPermissions(

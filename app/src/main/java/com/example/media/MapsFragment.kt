@@ -20,6 +20,11 @@ class MapsFragment : Fragment() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationManager: LocationManager
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        Places.initialize(requireContext(),"AIzaSyDfYhFGAUAT97N405VnXl27My2zd6Oo1eY" )
+        locationManager = LocationManager(requireContext())
+    }
     @SuppressLint("MissingPermission")
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -31,7 +36,7 @@ class MapsFragment : Fragment() {
         // map fragment init
         val supportMapFragment =
             childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
-        Places.initialize(requireContext(), "AIzaSyDfYhFGAUAT97N405VnXl27My2zd6Oo1eY")
+        //Places.initialize(requireContext(), "AIzaSyDfYhFGAUAT97N405VnXl27My2zd6Oo1eY")
         locationManager = LocationManager(requireContext())
         locationManager.startLocationUpdates()
 
@@ -98,7 +103,7 @@ class MapsFragment : Fragment() {
         }
     }
 
-/*    override fun onResume() {
+    override fun onResume() {
         super.onResume()
         locationManager.startLocationUpdates()
     }
@@ -106,7 +111,7 @@ class MapsFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         locationManager.stopLocationUpdates()
-    }*/
+    }
 
 
 }

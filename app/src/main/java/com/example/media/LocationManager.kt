@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
 import android.media.AudioManager
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
@@ -20,6 +21,14 @@ import kotlin.time.Duration.Companion.seconds
 
 class LocationManager(private val context: Context) {
 
+    private val lowVolumeList = listOf(Place.Type.LIBRARY, Place.Type.SCHOOL, Place.Type.CHURCH, Place.Type.UNIVERSITY
+    )
+    private val mediumVolumeList = listOf(Place.Type.RESTAURANT, Place.Type.BAR, Place.Type.GROCERY_OR_SUPERMARKET
+    )
+    private val highVolumeList = listOf(Place.Type.STADIUM, Place.Type.ROUTE)
+
+    private var locationInterval = 30000L
+
     // Initialize PlacesClient
     private val placesClient: PlacesClient = Places.createClient(context)
     private val fusedLocationClient: FusedLocationProviderClient =
@@ -28,7 +37,7 @@ class LocationManager(private val context: Context) {
     private val locationCallback = object : LocationCallback() {
         override fun onLocationResult(locationResult: LocationResult) {
             locationResult.lastLocation?.let { location ->
-                checkIfInLibrary(location)
+                checkIfInBuilding(location)
             }
         }
     }
@@ -62,7 +71,7 @@ class LocationManager(private val context: Context) {
         fusedLocationClient.removeLocationUpdates(locationCallback)
     }
 
-    private fun checkIfInLibrary(location: Location) {
+    private fun checkIfInBuilding(location: Location) {
         val placeFields = listOf(Place.Field.NAME, Place.Field.TYPES)
         val request = FindCurrentPlaceRequest.newInstance(placeFields)
 
@@ -88,10 +97,14 @@ class LocationManager(private val context: Context) {
             .addOnSuccessListener { response ->
                 for (placeLikelihood in response.placeLikelihoods) {
                     val place = placeLikelihood.place
-                    if (place.types.contains(Place.Type.LIBRARY)) {
-                        adjustVolume(true)
-                        return@addOnSuccessListener
-                    }
+                    checkPlaceTypeAndAdjustVolume(place)
+                    // Handle the failure case if unable to fetch place details
+                    Toast.makeText(
+                        context.applicationContext,
+                        place.name,
+                        Toast.LENGTH_LONG
+                    ).show()
+                    return@addOnSuccessListener
                 }
                 adjustVolume(false)
             }
@@ -116,10 +129,58 @@ class LocationManager(private val context: Context) {
         }
     }
 
+    private fun setVolumeLevel(audioManager: AudioManager, volumeLevel: Float) {
+        audioManager.ringerMode = if (volumeLevel == 0.0f) {
+            AudioManager.RINGER_MODE_SILENT
+        } else {
+            AudioManager.RINGER_MODE_NORMAL
+        }
+
+        val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_RING)
+        val newVolume = (maxVolume * volumeLevel).toInt()
+        audioManager.setStreamVolume(AudioManager.STREAM_RING, newVolume, 0)
+    }
+
+    private fun checkPlaceTypeAndAdjustVolume(place: Place) {
+        val isInLowVolumeBuilding = place.types.any { type ->
+            type in lowVolumeList
+        }
+        val isInMediumVolumeBuilding = place.types.any { type ->
+            type in mediumVolumeList
+        }
+        val isInHighVolumeBuilding = place.types.any { type ->
+            type in highVolumeList
+        }
+
+        val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+
+        when {
+            isInHighVolumeBuilding -> {
+                setVolumeLevel(audioManager, 1.0f) // Set volume to 100% for high volume places
+            }
+            isInMediumVolumeBuilding -> {
+                setVolumeLevel(audioManager, 0.5f) // Set volume to 50% for medium volume places
+            }
+            isInLowVolumeBuilding -> {
+                setVolumeLevel(audioManager, 0.0f) // Set volume to silent for low volume places
+            }
+            else -> {
+                setVolumeLevel(audioManager, 1.0f) // Reset volume to normal for other places
+            }
+        }
+    }
+
+    fun setLocationInterval(interval: Long){
+        locationInterval = interval
+        stopLocationUpdates()
+        startLocationUpdates()
+    }
+
     private fun getLocationRequest(): LocationRequest {
         return LocationRequest.create().apply {
-            interval = 3000
-            fastestInterval = 3000
+            //interval = 30000 //3000
+            interval = locationInterval
+            fastestInterval = locationInterval
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }
     }

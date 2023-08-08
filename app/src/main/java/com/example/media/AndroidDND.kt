@@ -50,7 +50,7 @@ class AndroidDND(
         Toast.makeText(
             context.applicationContext,
             "Do Not Disturb mode disabled",
-            Toast.LENGTH_LONG
+            Toast.LENGTH_SHORT
         ).show()
     }
 

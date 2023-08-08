@@ -24,11 +24,109 @@ class LocationManager(private val context: Context) {
         AndroidDND(context)
     }
 
-    private val lowVolumeList = listOf(Place.Type.LIBRARY, Place.Type.SCHOOL, Place.Type.CHURCH, Place.Type.UNIVERSITY
+    private val lowVolumeList = listOf(
+        Place.Type.DOCTOR,
+        Place.Type.DENTIST,
+        Place.Type.ACCOUNTING,
+        Place.Type.AQUARIUM,
+        Place.Type.ART_GALLERY,
+        Place.Type.CAMPGROUND,
+        Place.Type.CEMETERY,
+        Place.Type.CHURCH,
+        Place.Type.CITY_HALL,
+        Place.Type.COURTHOUSE,
+        Place.Type.FUNERAL_HOME,
+        Place.Type.UNIVERSITY,
+        Place.Type.HINDU_TEMPLE,
+        Place.Type.HOSPITAL,
+        Place.Type.MOSQUE,
+        Place.Type.LIBRARY,
+        Place.Type.MOVIE_THEATER,
+        Place.Type.MUSEUM,
+        Place.Type.PLACE_OF_WORSHIP,
+        Place.Type.PRIMARY_SCHOOL,
+        Place.Type.SCHOOL,
+        Place.Type.SECONDARY_SCHOOL,
+        Place.Type.SYNAGOGUE,
     )
-    private val mediumVolumeList = listOf(Place.Type.RESTAURANT, Place.Type.BAR, Place.Type.GROCERY_OR_SUPERMARKET
+    private val mediumVolumeList = listOf(
+        Place.Type.AIRPORT,
+        Place.Type.DEPARTMENT_STORE,
+        Place.Type.DRUGSTORE,
+        Place.Type.ELECTRICIAN,
+        Place.Type.ELECTRONICS_STORE,
+        Place.Type.EMBASSY,
+        Place.Type.FIRE_STATION,
+        Place.Type.FLORIST,
+        Place.Type.FURNITURE_STORE,
+        Place.Type.GAS_STATION,
+        Place.Type.HAIR_CARE,
+        Place.Type.HARDWARE_STORE,
+        Place.Type.HOME_GOODS_STORE,
+        Place.Type.INSURANCE_AGENCY,
+        Place.Type.JEWELRY_STORE,
+        Place.Type.LAUNDRY,
+        Place.Type.LAWYER,
+        Place.Type.LIGHT_RAIL_STATION,
+        Place.Type.LIQUOR_STORE,
+        Place.Type.LOCAL_GOVERNMENT_OFFICE,
+        Place.Type.LOCKSMITH,
+        Place.Type.LODGING,
+        Place.Type.MEAL_DELIVERY,
+        Place.Type.MEAL_TAKEAWAY,
+        Place.Type.MOVIE_RENTAL,
+        Place.Type.MOVING_COMPANY,
+        Place.Type.ATM,
+        Place.Type.BAKERY,
+        Place.Type.BANK,
+        Place.Type.BICYCLE_STORE,
+        Place.Type.BOOK_STORE,
+        Place.Type.BUS_STATION,
+        Place.Type.CAFE,
+        Place.Type.CAR_DEALER,
+        Place.Type.CAR_RENTAL,
+        Place.Type.CAR_REPAIR,
+        Place.Type.CAR_WASH,
+        Place.Type.CLOTHING_STORE,
+        Place.Type.CONVENIENCE_STORE,
+        Place.Type.PAINTER,
+        Place.Type.PHARMACY,
+        Place.Type.SHOE_STORE,
+        Place.Type.PHYSIOTHERAPIST,
+        Place.Type.PLUMBER,
+        Place.Type.POLICE,
+        Place.Type.POST_OFFICE,
+        Place.Type.REAL_ESTATE_AGENCY,
+        Place.Type.SPA,
+        Place.Type.TRAVEL_AGENCY,
+        Place.Type.VETERINARY_CARE,
+        Place.Type.ROOFING_CONTRACTOR,
+        Place.Type.PARK,
     )
-    private val highVolumeList = listOf(Place.Type.STADIUM, Place.Type.ROUTE)
+    private val highVolumeList = listOf(
+        Place.Type.AMUSEMENT_PARK,
+        Place.Type.GYM,
+        Place.Type.PARKING,
+        Place.Type.PET_STORE,
+        Place.Type.RESTAURANT,
+        Place.Type.RV_PARK,
+        Place.Type.SHOPPING_MALL,
+        Place.Type.STADIUM,
+        Place.Type.STORAGE,
+        Place.Type.STORE,
+        Place.Type.SUBWAY_STATION,
+        Place.Type.SUPERMARKET,
+        Place.Type.TAXI_STAND,
+        Place.Type.TOURIST_ATTRACTION,
+        Place.Type.TRAIN_STATION,
+        Place.Type.TRANSIT_STATION,
+        Place.Type.ZOO,
+        Place.Type.NIGHT_CLUB,
+        Place.Type.CASINO,
+        Place.Type.ROUTE,
+        Place.Type.TOWN_SQUARE
+    )
+
 
     private var locationInterval = 30000L
     private val sharedPreferences = context.getSharedPreferences("LocationPrefs", Context.MODE_PRIVATE)
@@ -104,9 +202,14 @@ class LocationManager(private val context: Context) {
                     val place = placeLikelihood.place
                     checkPlaceTypeAndAdjustVolume(place)
                     // Handle the failure case if unable to fetch place details
-                    Toast.makeText(
+/*                    Toast.makeText(
                         context.applicationContext,
                         locationInterval.toString(),
+                        Toast.LENGTH_LONG
+                    ).show()*/
+                    Toast.makeText(
+                        context.applicationContext,
+                        place.types.toString(),
                         Toast.LENGTH_LONG
                     ).show()
                     return@addOnSuccessListener
@@ -119,28 +222,13 @@ class LocationManager(private val context: Context) {
             }
     }
 
-/*    private fun adjustVolume(isInLibrary: Boolean) {
-        val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-
-        if (isInLibrary) {
-            controllerDND.enableDndMode()
-        } else {
-            audioManager.ringerMode = AudioManager.RINGER_MODE_NORMAL
-            audioManager.setStreamVolume(
-                AudioManager.STREAM_RING,
-                audioManager.getStreamMaxVolume(AudioManager.STREAM_RING),
-                0
-            )
-        }
-    }*/
-
     private fun setVolumeLevel(audioManager: AudioManager, volumeLevel: Float) {
         audioManager.ringerMode = if (volumeLevel == 0.0f) {
             AudioManager.RINGER_MODE_SILENT
         } else {
             AudioManager.RINGER_MODE_NORMAL
         }
-
+        // Adjust ringtone volume
         val maxRingVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_RING)
         val newRingVolume = (maxRingVolume * volumeLevel).toInt()
         audioManager.setStreamVolume(AudioManager.STREAM_RING, newRingVolume, 0)
@@ -169,15 +257,19 @@ class LocationManager(private val context: Context) {
 
         when {
             isInHighVolumeBuilding -> {
+                controllerDND.disableDndMode()
                 setVolumeLevel(audioManager, 1.0f) // Set volume to 100% for high volume places
             }
             isInMediumVolumeBuilding -> {
+                controllerDND.disableDndMode()
                 setVolumeLevel(audioManager, 0.5f) // Set volume to 50% for medium volume places
             }
             isInLowVolumeBuilding -> {
+                controllerDND.enableDndMode()
                 setVolumeLevel(audioManager, 0.0f) // Set volume to silent for low volume places
             }
             else -> {
+                controllerDND.disableDndMode()
                 setVolumeLevel(audioManager, 0.5f) // Reset volume to 50% for other places
             }
         }

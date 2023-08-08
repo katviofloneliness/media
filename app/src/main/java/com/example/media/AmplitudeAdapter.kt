@@ -15,7 +15,7 @@ class AmplitudeAdapter(private val data: List<AmplitudeData>) :
 
     override fun onBindViewHolder(holder: AmplitudeViewHolder, position: Int) {
         val amplitudeData = data[position]
-        holder.Amplitude.text = amplitudeData.toString() + " dB"
+        holder.Amplitude.text = amplitudeData.amplitude.toString() + " dB"
         holder.Time.text = amplitudeData.time
     }
 

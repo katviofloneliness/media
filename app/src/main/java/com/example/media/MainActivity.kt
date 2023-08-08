@@ -123,8 +123,8 @@ class MainActivity : AppCompatActivity(), MainActivityCallback {
                         }
                     }
                 }
-                val fragment = Home.newInstance(amplitudeList)
-                replaceFragment(fragment)
+                /*val fragment = Home.newInstance(amplitudeList)
+                replaceFragment(fragment)*/
                 // Pass the amplitudeList to the new fragment for display
                 //val fragment = Home.newInstance(amplitudeList)
                 //replaceFragment(fragment)

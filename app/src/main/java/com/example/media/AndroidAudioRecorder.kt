@@ -17,6 +17,9 @@ import kotlin.math.log10
 class AndroidAudioRecorder(
     private val context: Context
 ) : AudioRecorder {
+    private val controllerDecisionModel by lazy {
+        AndroidDecisionModel(context)
+    }
 
     private var recorder: MediaRecorder? = null
     private var samplingRate = 1
@@ -53,10 +56,11 @@ class AndroidAudioRecorder(
         //recorder?.maxAmplitude
 
         val currentTime = System.currentTimeMillis()
-        val amplitudeTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date(currentTime))
+        val amplitudeTime = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(currentTime))
 
         var dB = 20 * log10(recorder?.maxAmplitude!!.toDouble() / samplingRate)
-        val amplitudeData = hashMapOf("amplitudeDB" to dB, "time" to amplitudeTime)
+        val outcome = controllerDecisionModel.checkAmplitude(dB)
+        val amplitudeData = hashMapOf("amplitudeDB" to dB, "time" to amplitudeTime, "outcome" to outcome)
         amplitudeKey?.let { key ->
             amplitudeRef.child(key).setValue(amplitudeData)
         }

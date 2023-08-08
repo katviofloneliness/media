@@ -28,6 +28,7 @@ class LocationManager(private val context: Context) {
     private val highVolumeList = listOf(Place.Type.STADIUM, Place.Type.ROUTE)
 
     private var locationInterval = 30000L
+    private val sharedPreferences = context.getSharedPreferences("LocationPrefs", Context.MODE_PRIVATE)
 
     // Initialize PlacesClient
     private val placesClient: PlacesClient = Places.createClient(context)
@@ -43,6 +44,7 @@ class LocationManager(private val context: Context) {
     }
 
     fun startLocationUpdates() {
+        locationInterval = sharedPreferences.getLong("interval", 30000L)
         if (ActivityCompat.checkSelfPermission(
                 context,
                 android.Manifest.permission.ACCESS_FINE_LOCATION
@@ -101,7 +103,7 @@ class LocationManager(private val context: Context) {
                     // Handle the failure case if unable to fetch place details
                     Toast.makeText(
                         context.applicationContext,
-                        place.name,
+                        locationInterval.toString(),
                         Toast.LENGTH_LONG
                     ).show()
                     return@addOnSuccessListener
@@ -172,8 +174,9 @@ class LocationManager(private val context: Context) {
 
     fun setLocationInterval(interval: Long){
         locationInterval = interval
-        stopLocationUpdates()
-        startLocationUpdates()
+        sharedPreferences.edit().putLong("interval", interval).apply()
+        //stopLocationUpdates()
+        //startLocationUpdates()
     }
 
     private fun getLocationRequest(): LocationRequest {

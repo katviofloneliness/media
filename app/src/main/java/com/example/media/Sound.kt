@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Switch
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import com.google.firebase.database.DataSnapshot
@@ -55,6 +56,7 @@ class Sound : Fragment() {
         val play = view.findViewById<Button>(R.id.play)
         val stop = view.findViewById<Button>(R.id.stop)
         val interval = view.findViewById<EditText>(R.id.interval)
+        val switchLocation = view.findViewById<Switch>(R.id.locationSwitch)
 
         record.setOnClickListener {
             callback?.onRecordClicked()
@@ -68,11 +70,24 @@ class Sound : Fragment() {
         stop.setOnClickListener {
             callback?.onStopClicked()
         }
+        switchLocation.setOnCheckedChangeListener{_, isChecked ->
+            if(isChecked){
+                locationManager.startLocationUpdates()
+            } else {
+                locationManager.stopLocationUpdates()
+            }
+
+        }
 
         interval.addTextChangedListener {
             val newInterval = it.toString().toLongOrNull()
             if(newInterval != null){
                 locationManager.setLocationInterval(newInterval)
+                //Save interval value in shared preferences
+                val sharedPreferences = requireContext().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+                val editor = sharedPreferences.edit()
+                editor.putLong("interval", newInterval)
+                editor.apply()
             }
         }
 

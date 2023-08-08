@@ -35,8 +35,6 @@ class AndroidDecisionModel
 
         } catch (e: Exception) {
         }
-
-
     }
 }
 

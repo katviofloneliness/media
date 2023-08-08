@@ -21,6 +21,8 @@ import java.io.File
 
 
 class MainActivity : AppCompatActivity(), MainActivityCallback {
+
+
     private val recorder by lazy {
         AndroidAudioRecorder(applicationContext)
     }
@@ -64,7 +66,7 @@ class MainActivity : AppCompatActivity(), MainActivityCallback {
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
-        locationManager.startLocationUpdates()
+        //locationManager.startLocationUpdates()
 
 
         ActivityCompat.requestPermissions(

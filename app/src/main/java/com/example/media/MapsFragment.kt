@@ -103,11 +103,11 @@ class MapsFragment : Fragment() {
         }
     }
 
-    override fun onResume() {
+/*    override fun onResume() {
         super.onResume()
         locationManager.startLocationUpdates()
     }
-
+*/
     override fun onPause() {
         super.onPause()
         locationManager.stopLocationUpdates()

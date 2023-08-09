@@ -7,33 +7,10 @@ import android.widget.Toast
 class AndroidDecisionModel
     (private val context: Context){
 
-    private val thresholdDB: List<Double> = arrayListOf(40.0, 50.0, 80.0)
+    private val thresholdDB: List<Double> = arrayListOf(50.0, 60.0, 90.0)
     private val controllerDND by lazy {
         AndroidDND(context)
     }
-
-/*    override fun checkAmplitude(amplitudeDB: Double) {
-        try {
-            val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-            if (amplitudeDB <= thresholdDB[0]) controllerDND.enableDndMode()
-            else if (amplitudeDB > thresholdDB[0] && amplitudeDB <= thresholdDB[2]){
-       *//*         Toast.makeText(
-                    context.applicationContext,
-                    "40-80 dB range",
-                    Toast.LENGTH_SHORT
-                ).show()*//*
-                controllerDND.disableDndMode()
-                setVolumeLevel(audioManager, 0.5f)
-            }
-            else if (amplitudeDB > thresholdDB[2]){
-                controllerDND.disableDndMode()
-                setVolumeLevel(audioManager, 1.0f)
-
-            }
-
-        } catch (e: Exception) {
-        }
-    }*/
 
     fun checkAmplitude(amplitudeDB: Double): String {
         val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager

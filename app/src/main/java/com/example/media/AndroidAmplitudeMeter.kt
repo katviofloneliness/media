@@ -1,7 +1,9 @@
 import android.annotation.SuppressLint
+import android.content.Context
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
+import android.os.Handler
 
 class AndroidAmplitudeMeter(private val callback: AmplitudeCallback) {
 
@@ -9,6 +11,7 @@ class AndroidAmplitudeMeter(private val callback: AmplitudeCallback) {
         private const val SAMPLE_RATE = 44100
         private const val CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_MONO
         private const val AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT
+        private const val MEASUREMENT_INTERVAL = 30000L
     }
 
     private var isRecording = false
@@ -17,6 +20,16 @@ class AndroidAmplitudeMeter(private val callback: AmplitudeCallback) {
     )
 
     private var audioRecord: AudioRecord? = null
+    private val handler = Handler()
+
+    private val measureRunnable: Runnable = object : Runnable {
+        override fun run() {
+            if (isRecording) {
+                measureAmplitude()
+                handler.postDelayed(this, MEASUREMENT_INTERVAL)
+            }
+        }
+    }
 
     @SuppressLint("MissingPermission")
     fun start() {
@@ -29,12 +42,14 @@ class AndroidAmplitudeMeter(private val callback: AmplitudeCallback) {
             audioRecord?.startRecording()
 
             isRecording = true
-            Thread { measureAmplitude() }.start()
+            measureAmplitude()
+            handler.postDelayed(measureRunnable, MEASUREMENT_INTERVAL)
         }
     }
 
     fun stop() {
         isRecording = false
+        handler.removeCallbacks(measureRunnable)
         audioRecord?.stop()
         audioRecord?.release()
         audioRecord = null
@@ -42,13 +57,10 @@ class AndroidAmplitudeMeter(private val callback: AmplitudeCallback) {
 
     private fun measureAmplitude() {
         val buffer = ShortArray(bufferSize)
-        while (isRecording) {
-            val read = audioRecord?.read(buffer, 0, bufferSize)
-            if (read != null && read > 0) {
-                val amplitude = calculateAmplitude(buffer, read)
-                callback.onAmplitudeMeasured(amplitude)
-                Thread.sleep(300) // Adjust this delay if needed
-            }
+        val read = audioRecord?.read(buffer, 0, bufferSize)
+        if (read != null && read > 0) {
+            val amplitude = calculateAmplitude(buffer, read)
+            callback.onAmplitudeMeasured(amplitude)
         }
     }
 

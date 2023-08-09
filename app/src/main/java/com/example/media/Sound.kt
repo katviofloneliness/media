@@ -14,6 +14,10 @@ import android.widget.Toast
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import com.google.firebase.database.FirebaseDatabase
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
 //import com.example.media.AndroidAmplitudeMeter.AmplitudeCallback
 
 interface MainActivityCallback {
@@ -32,8 +36,7 @@ class Sound : Fragment(), AndroidAmplitudeMeter.AmplitudeCallback {
     val amplitudesRef = database.getReference("amplitudes")
 
     private lateinit var amplitudeMeter: AndroidAmplitudeMeter
-
-
+    private lateinit var controllerDecisionModel: AndroidDecisionModel
     private lateinit var locationManager: LocationManager
 
     override fun onAttach(context: Context) {
@@ -59,6 +62,7 @@ class Sound : Fragment(), AndroidAmplitudeMeter.AmplitudeCallback {
         super.onViewCreated(view, savedInstanceState)
         locationManager = LocationManager(requireContext())
         amplitudeMeter = AndroidAmplitudeMeter(requireContext(),this)
+        controllerDecisionModel = AndroidDecisionModel(requireContext())
 
         val record = view.findViewById<Button>(R.id.record)
         val stopRecording = view.findViewById<Button>(R.id.stop_recording)
@@ -67,6 +71,7 @@ class Sound : Fragment(), AndroidAmplitudeMeter.AmplitudeCallback {
         val interval = view.findViewById<EditText>(R.id.interval)
         val switchLocation = view.findViewById<Switch>(R.id.locationSwitch)
         val soundSwitch = view.findViewById<Switch>(R.id.soundSwitch)
+        val soundSwitchSimple = view.findViewById<Switch>(R.id.soundSwitchSimple)
 
         record.setOnClickListener {
             callback?.onRecordClicked()
@@ -95,6 +100,13 @@ class Sound : Fragment(), AndroidAmplitudeMeter.AmplitudeCallback {
                 amplitudeMeter.stop()
             }
         }
+        soundSwitchSimple.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                amplitudeMeter.startSimple()
+            } else {
+                amplitudeMeter.stop()
+            }
+        }
 
 
 
@@ -102,7 +114,7 @@ class Sound : Fragment(), AndroidAmplitudeMeter.AmplitudeCallback {
             val newInterval = it.toString().toLongOrNull()
             if(newInterval != null){
                 locationManager.setLocationInterval(newInterval)
-                //Save interval value in shared preferences
+                // Save interval value in shared preferences
                 val sharedPreferences = requireContext().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
                 val editor = sharedPreferences.edit()
                 editor.putLong("interval", newInterval)
@@ -111,13 +123,36 @@ class Sound : Fragment(), AndroidAmplitudeMeter.AmplitudeCallback {
         }
 
     }
-    override fun onAmplitudeMeasured(amplitude: Double) {
-/*        Toast.makeText(
-            context?.applicationContext,
-            "$amplitude",
-            Toast.LENGTH_LONG
-        ).show()*/
-        Log.d("Amplitude", "Measured amplitude: $amplitude")
+    override fun onAmplitudeMeasured(amplitudeDB: Double) {
+        val database = FirebaseDatabase.getInstance()
+        val amplitudeRef = database.getReference("amplitudesInterval")
+        val amplitudeKey = amplitudeRef.push().key
+
+        val currentTime = System.currentTimeMillis()
+        val amplitudeTime = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(currentTime))
+        var outcome = controllerDecisionModel.checkAmplitude(amplitudeDB)
+
+        val amplitudeData = hashMapOf("amplitudeDB" to amplitudeDB, "time" to amplitudeTime, "outcome" to outcome)
+        amplitudeKey?.let { key ->
+            amplitudeRef.child(key).setValue(amplitudeData)
+        }
+        Log.d("Amplitude", "Measured amplitude: $amplitudeDB")
+    }
+
+    override fun onAmplitudeMeasuredSimple(amplitudeDB: Double) {
+        val database = FirebaseDatabase.getInstance()
+        val amplitudeRef = database.getReference("amplitudesIntervalSimple")
+        val amplitudeKey = amplitudeRef.push().key
+
+        val currentTime = System.currentTimeMillis()
+        val amplitudeTime = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(currentTime))
+        var outcome = controllerDecisionModel.checkAmplitudeSimple(amplitudeDB)
+
+        val amplitudeData = hashMapOf("amplitudeDB" to amplitudeDB, "time" to amplitudeTime, "outcome" to outcome)
+        amplitudeKey?.let { key ->
+            amplitudeRef.child(key).setValue(amplitudeData)
+        }
+        Log.d("AmplitudeSimple", "Measured amplitude simple: $amplitudeDB")
     }
 
 

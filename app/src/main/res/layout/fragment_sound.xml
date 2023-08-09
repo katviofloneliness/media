@@ -84,12 +84,17 @@
         android:layout_marginTop="16dp"
         />
 
-    <!--<TextView
-        android:id="@+id/noise"
+    <Switch
+        android:id="@+id/soundSwitchSimple"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Sound"
-        android:textSize="26dp" />-->
+        android:text="Enable Sound Measurements Simple"
+        android:checked="false"
+        app:layout_constraintTop_toBottomOf="@+id/soundSwitch"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"
+        />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

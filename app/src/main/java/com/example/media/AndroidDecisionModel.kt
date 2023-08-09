@@ -7,7 +7,7 @@ import android.widget.Toast
 class AndroidDecisionModel
     (private val context: Context){
 
-    private val thresholdDB: List<Double> = arrayListOf(50.0, 60.0, 90.0)
+    private val thresholdDB: List<Double> = arrayListOf(50.0, 70.0, 90.0)
     private val controllerDND by lazy {
         AndroidDND(context)
     }
@@ -29,6 +29,23 @@ class AndroidDecisionModel
                 controllerDND.disableDndMode()
                 setVolumeLevel(audioManager, 1.0f)
                 "Loud"
+            }
+        }
+    }
+
+    fun checkAmplitudeSimple(amplitudeDB: Double): String {
+        val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+
+        return when {
+            amplitudeDB <= thresholdDB[1] -> {
+                controllerDND.disableDndMode()
+                setVolumeLevel(audioManager, 0.3f)
+                "Low volume"
+            }
+            else -> {
+                controllerDND.disableDndMode()
+                setVolumeLevel(audioManager, 0.7f)
+                "High volume"
             }
         }
     }

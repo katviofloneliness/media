@@ -34,6 +34,15 @@ class AndroidAmplitudeMeter(private val context: Context, private val callback: 
             }
         }
     }
+    private val measureRunnableSimple: Runnable = object : Runnable {
+        override fun run() {
+            if (isRecording) {
+                measureAmplitudeSimple()
+                val interval = sharedPreferences.getLong("interval", MEASUREMENT_INTERVAL)
+                handler.postDelayed(this, interval)
+            }
+        }
+    }
 
     @SuppressLint("MissingPermission")
     fun start() {
@@ -52,9 +61,27 @@ class AndroidAmplitudeMeter(private val context: Context, private val callback: 
         }
     }
 
+    @SuppressLint("MissingPermission")
+    fun startSimple() {
+        if (!isRecording) {
+            audioRecord = AudioRecord(
+                MediaRecorder.AudioSource.MIC,
+                SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT, bufferSize
+            )
+
+            audioRecord?.startRecording()
+
+            isRecording = true
+            measureAmplitudeSimple()
+            val interval = sharedPreferences.getLong("interval", MEASUREMENT_INTERVAL)
+            handler.postDelayed(measureRunnableSimple, interval)
+        }
+    }
+
     fun stop() {
         isRecording = false
         handler.removeCallbacks(measureRunnable)
+        handler.removeCallbacks(measureRunnableSimple)
         audioRecord?.stop()
         audioRecord?.release()
         audioRecord = null
@@ -68,17 +95,32 @@ class AndroidAmplitudeMeter(private val context: Context, private val callback: 
             callback.onAmplitudeMeasured(amplitude)
         }
     }
+    private fun measureAmplitudeSimple() {
+        val buffer = ShortArray(bufferSize)
+        val read = audioRecord?.read(buffer, 0, bufferSize)
+        if (read != null && read > 0) {
+            val amplitude = calculateAmplitude(buffer, read)
+            callback.onAmplitudeMeasuredSimple(amplitude)
+        }
+    }
 
     private fun calculateAmplitude(buffer: ShortArray, readSize: Int): Double {
         var sum = 0.0
         for (i in 0 until readSize) {
             sum += buffer[i] * buffer[i].toDouble()
         }
-        val amplitude = Math.sqrt(sum / readSize)
-        return amplitude
+        val rms = Math.sqrt(sum / readSize)
+        val reference = 32767.0 // Maximum value for a 16-bit PCM signal
+        var db = 0.0
+        if (rms > 0) {
+            db = Math.abs( 20 * Math.log10(rms / reference))
+        }
+        return db
+
     }
 
     interface AmplitudeCallback {
         fun onAmplitudeMeasured(amplitude: Double)
+        fun onAmplitudeMeasuredSimple(amplitude: Double)
     }
 }

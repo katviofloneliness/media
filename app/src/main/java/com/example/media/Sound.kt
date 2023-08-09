@@ -58,7 +58,7 @@ class Sound : Fragment(), AndroidAmplitudeMeter.AmplitudeCallback {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         locationManager = LocationManager(requireContext())
-        amplitudeMeter = AndroidAmplitudeMeter(this)
+        amplitudeMeter = AndroidAmplitudeMeter(requireContext(),this)
 
         val record = view.findViewById<Button>(R.id.record)
         val stopRecording = view.findViewById<Button>(R.id.stop_recording)

@@ -5,14 +5,17 @@ import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.os.Handler
 
-class AndroidAmplitudeMeter(private val callback: AmplitudeCallback) {
+class AndroidAmplitudeMeter(private val context: Context, private val callback: AmplitudeCallback) {
 
     companion object {
         private const val SAMPLE_RATE = 44100
         private const val CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_MONO
         private const val AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT
-        private const val MEASUREMENT_INTERVAL = 30000L
+        private var MEASUREMENT_INTERVAL = 30000L
     }
+
+    private val sharedPreferences = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+
 
     private var isRecording = false
     private val bufferSize = AudioRecord.getMinBufferSize(
@@ -26,7 +29,8 @@ class AndroidAmplitudeMeter(private val callback: AmplitudeCallback) {
         override fun run() {
             if (isRecording) {
                 measureAmplitude()
-                handler.postDelayed(this, MEASUREMENT_INTERVAL)
+                val interval = sharedPreferences.getLong("interval", MEASUREMENT_INTERVAL)
+                handler.postDelayed(this, interval)
             }
         }
     }
@@ -43,7 +47,8 @@ class AndroidAmplitudeMeter(private val callback: AmplitudeCallback) {
 
             isRecording = true
             measureAmplitude()
-            handler.postDelayed(measureRunnable, MEASUREMENT_INTERVAL)
+            val interval = sharedPreferences.getLong("interval", MEASUREMENT_INTERVAL)
+            handler.postDelayed(measureRunnable, interval)
         }
     }
 

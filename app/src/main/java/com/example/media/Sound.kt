@@ -1,18 +1,20 @@
 package com.example.media
 
+import AndroidAmplitudeMeter
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Switch
+import android.widget.Toast
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
-import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+//import com.example.media.AndroidAmplitudeMeter.AmplitudeCallback
 
 interface MainActivityCallback {
     fun onRecordClicked()
@@ -20,11 +22,17 @@ interface MainActivityCallback {
     fun onPlayClicked()
     fun onStopClicked()
 }
+/*interface AmplitudeCallback {
+    fun onAmplitudeMeasured(amplitude: Double)
+}*/
 
-class Sound : Fragment() {
+class Sound : Fragment(), AndroidAmplitudeMeter.AmplitudeCallback {
     private var callback: MainActivityCallback? = null
     val database = FirebaseDatabase.getInstance()
     val amplitudesRef = database.getReference("amplitudes")
+
+    private lateinit var amplitudeMeter: AndroidAmplitudeMeter
+
 
     private lateinit var locationManager: LocationManager
 
@@ -50,6 +58,7 @@ class Sound : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         locationManager = LocationManager(requireContext())
+        amplitudeMeter = AndroidAmplitudeMeter(this)
 
         val record = view.findViewById<Button>(R.id.record)
         val stopRecording = view.findViewById<Button>(R.id.stop_recording)
@@ -57,6 +66,7 @@ class Sound : Fragment() {
         val stop = view.findViewById<Button>(R.id.stop)
         val interval = view.findViewById<EditText>(R.id.interval)
         val switchLocation = view.findViewById<Switch>(R.id.locationSwitch)
+        val soundSwitch = view.findViewById<Switch>(R.id.soundSwitch)
 
         record.setOnClickListener {
             callback?.onRecordClicked()
@@ -78,6 +88,15 @@ class Sound : Fragment() {
             }
 
         }
+        soundSwitch.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                amplitudeMeter.start()
+            } else {
+                amplitudeMeter.stop()
+            }
+        }
+
+
 
         interval.addTextChangedListener {
             val newInterval = it.toString().toLongOrNull()
@@ -92,5 +111,14 @@ class Sound : Fragment() {
         }
 
     }
+    override fun onAmplitudeMeasured(amplitude: Double) {
+/*        Toast.makeText(
+            context?.applicationContext,
+            "$amplitude",
+            Toast.LENGTH_LONG
+        ).show()*/
+        Log.d("Amplitude", "Measured amplitude: $amplitude")
+    }
+
 
 }

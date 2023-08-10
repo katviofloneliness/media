@@ -7,7 +7,8 @@
     <item android:title="GPS"
         android:id="@+id/map"
         android:icon="@drawable/baseline_navigation_24"/>
-    <item android:title="Sound"
+    <item
         android:id="@+id/sound"
-        android:icon="@drawable/baseline_music_note_24"/>
+        android:icon="@drawable/baseline_music_note_24"
+        android:title="General" />
 </menu>

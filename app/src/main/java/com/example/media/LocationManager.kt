@@ -157,13 +157,6 @@ class LocationManager(private val context: Context) {
                 android.Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
             return
         }
         fusedLocationClient.requestLocationUpdates(
@@ -240,11 +233,11 @@ class LocationManager(private val context: Context) {
     }
 
     private fun checkPlaceTypeAndAdjustVolume(place: Place) {
-        val isInLowVolumeBuilding = place.types.any { type ->
-            type in lowVolumeList
-        }
         val isInMediumVolumeBuilding = place.types.any { type ->
             type in mediumVolumeList
+        }
+        val isInLowVolumeBuilding = place.types.any { type ->
+            type in lowVolumeList
         }
         val isInHighVolumeBuilding = place.types.any { type ->
             type in highVolumeList
@@ -281,7 +274,6 @@ class LocationManager(private val context: Context) {
 
     private fun getLocationRequest(): LocationRequest {
         return LocationRequest.create().apply {
-            //interval = 30000 //3000
             interval = locationInterval
             fastestInterval = locationInterval
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
@@ -290,11 +282,14 @@ class LocationManager(private val context: Context) {
     private fun savePlaceTypeToFirebase(place: Place) {
         val databaseReference = FirebaseDatabase.getInstance().getReference("places")
 
-        val placeType = place.types.firstOrNull() // Get the first place type, you might want to handle multiple types differently
+        //val placeType = place.types.firstOrNull()
+        val placeType = place.types
+
 
         if (placeType != null) {
             val placeValues = HashMap<String, Any>()
-            placeValues["placeType"] = placeType.name // Save the place type to Firebase
+            //placeValues["placeType"] = placeType.name
+            placeValues["placeType"] = placeType.toString()
 
             val currentTime = System.currentTimeMillis()
             val dateFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
@@ -302,15 +297,10 @@ class LocationManager(private val context: Context) {
 
             placeValues["requestTime"] = formattedTime // Save the formatted time
 
-            // Generate a unique key for the request
             val requestKey = databaseReference.push().key
-
             if (requestKey != null) {
-                // Save the place type and request time information to Firebase Realtime Database
                 val requestReference = databaseReference.child(requestKey)
                 requestReference.setValue(placeValues)
-
-                // Keep a reference to the place under its name
                 val placeReference = requestReference.child("place")
                 placeReference.setValue(place.name)
             }

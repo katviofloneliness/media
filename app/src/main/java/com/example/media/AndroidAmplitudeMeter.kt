@@ -12,7 +12,8 @@ import kotlin.math.log10
 class AndroidAmplitudeMeter(private val context: Context, private val callback: AmplitudeCallback) {
 
     private val offset = -20.0
-    private var MEASUREMENT_INTERVAL = 30000L
+    private var MEASUREMENT_INTERVAL = 60000L
+    private var MEASUREMENT_DURATION = 5000L
     private var mediaRecorder: MediaRecorder? = null
     private val handler = Handler()
 
@@ -80,6 +81,7 @@ class AndroidAmplitudeMeter(private val context: Context, private val callback: 
     fun stop() {
         isRecording = false
         handler.removeCallbacks(measureRunnable)
+        handler.removeCallbacks(measureRunnableSimple)
         mediaRecorder?.stop()
         mediaRecorder?.reset()
         mediaRecorder?.release()

@@ -32,12 +32,6 @@ class MainActivity : AppCompatActivity(), MainActivityCallback {
     private val controllerDND by lazy {
         AndroidDND(applicationContext)
     }
-    private val controllerDecisionModel by lazy {
-        AndroidDecisionModel(applicationContext)
-    }
-    private val locationManager by lazy {
-        LocationManager(this)
-    }
     private val REQUEST_CODE = 111
 
     private lateinit var notificationManager: NotificationManager
@@ -46,13 +40,12 @@ class MainActivity : AppCompatActivity(), MainActivityCallback {
 
     private var audioFile: File? = null
 
-    //var amplitudeList: MutableList<Float> = mutableListOf()
+
     var amplitudeList: MutableList<AmplitudeData> = mutableListOf()
 
     val database = FirebaseDatabase.getInstance()
     val amplitudesRef = database.getReference("amplitudes")
 
-    //lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -67,9 +60,6 @@ class MainActivity : AppCompatActivity(), MainActivityCallback {
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
-        //locationManager.startLocationUpdates()
-
-
         ActivityCompat.requestPermissions(
             this, arrayOf(
                 Manifest.permission.RECORD_AUDIO,
@@ -80,9 +70,6 @@ class MainActivity : AppCompatActivity(), MainActivityCallback {
             ), REQUEST_CODE
         )
         controllerDND.checkPermissionDndMode(this)
-
-
-        //fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -110,12 +97,10 @@ class MainActivity : AppCompatActivity(), MainActivityCallback {
 
         amplitudesRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                // Amplitudes data has changed, retrieve and process the new data
-               // val amplitudeList: MutableList<Float> = mutableListOf()
                 amplitudeList.clear()
 
                 for (amplitudeSnapshot in dataSnapshot.children) {
-                    val amplitude = amplitudeSnapshot.child("amplitudeDB").getValue(Float::class.java)
+                    val amplitude = amplitudeSnapshot.child("amplitudeDB").getValue(String::class.java)
                     val time = amplitudeSnapshot.child("time").getValue(String::class.java)
                     amplitude?.let { amp ->
                         time?.let { t ->
@@ -123,12 +108,6 @@ class MainActivity : AppCompatActivity(), MainActivityCallback {
                         }
                     }
                 }
-                /*val fragment = Home.newInstance(amplitudeList)
-                replaceFragment(fragment)*/
-                // Pass the amplitudeList to the new fragment for display
-                //val fragment = Home.newInstance(amplitudeList)
-                //replaceFragment(fragment)
-                // Add the fragment to your activity using FragmentManager
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -157,13 +136,9 @@ class MainActivity : AppCompatActivity(), MainActivityCallback {
     override fun onStopRecordingClicked() {
         try {
             var ampDB = recorder.getAmp()
-            Toast.makeText(this, ampDB.toString(), Toast.LENGTH_LONG).show()
+            //Toast.makeText(this, ampDB.toString().format("%.2f",ampDB), Toast.LENGTH_LONG).show()
             recorder.stop()
-            controllerDecisionModel.checkAmplitude(ampDB)
-
-/*            if (ampDB > 70) controllerDND.enableDndMode()
-            else controllerDND.disableDndMode()*/
-
+            //controllerDecisionModel.checkAmplitude(ampDB)
         } catch (e: NullPointerException) {
         }
 

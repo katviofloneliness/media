@@ -3,27 +3,22 @@ import android.content.Context
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
+import android.media.audiofx.AudioEffect
 import android.os.Handler
 import android.widget.Toast
+import kotlin.math.abs
+import kotlin.math.log10
 
 class AndroidAmplitudeMeter(private val context: Context, private val callback: AmplitudeCallback) {
 
-    companion object {
-        private const val SAMPLE_RATE = 44100
-        private const val CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_MONO
-        private const val AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT
-        private var MEASUREMENT_INTERVAL = 30000L
-    }
-    private val sharedPreferences = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
-
-
-    private var isRecording = false
-    private val bufferSize = AudioRecord.getMinBufferSize(
-        SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT
-    )
-
-    private var audioRecord: AudioRecord? = null
+    private val offset = -20.0
+    private var MEASUREMENT_INTERVAL = 30000L
+    private var mediaRecorder: MediaRecorder? = null
     private val handler = Handler()
+
+    private val sharedPreferences = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+    private var isRecording = false
+
 
     private val measureRunnable: Runnable = object : Runnable {
         override fun run() {
@@ -47,80 +42,74 @@ class AndroidAmplitudeMeter(private val context: Context, private val callback: 
     @SuppressLint("MissingPermission")
     fun start() {
         if (!isRecording) {
-            audioRecord = AudioRecord(
-                MediaRecorder.AudioSource.MIC,
-                SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT, bufferSize
-            )
+            mediaRecorder = MediaRecorder()
+            mediaRecorder?.setAudioSource(MediaRecorder.AudioSource.MIC)
+            mediaRecorder?.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+            mediaRecorder?.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
 
-            audioRecord?.startRecording()
+            val tempFileName = "${context.getExternalFilesDir(null)?.absolutePath}/temp_audio.mp3"
+            mediaRecorder?.setOutputFile(tempFileName)
+
+            mediaRecorder?.prepare()
+            mediaRecorder?.start()
+            mediaRecorder?.maxAmplitude
 
             isRecording = true
-            measureAmplitude()
-            val interval = sharedPreferences.getLong("interval", MEASUREMENT_INTERVAL)
-            handler.postDelayed(measureRunnable, interval)
+            handler.post(measureRunnable)
         }
     }
-
-    @SuppressLint("MissingPermission")
     fun startSimple() {
         if (!isRecording) {
-            audioRecord = AudioRecord(
-                MediaRecorder.AudioSource.MIC,
-                SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT, bufferSize
-            )
-            audioRecord?.startRecording()
+            mediaRecorder = MediaRecorder()
+            mediaRecorder?.setAudioSource(MediaRecorder.AudioSource.MIC)
+            mediaRecorder?.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+            mediaRecorder?.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+
+            val tempFileName = "${context.getExternalFilesDir(null)?.absolutePath}/temp_audio.mp3"
+            mediaRecorder?.setOutputFile(tempFileName)
+
+            mediaRecorder?.prepare()
+            mediaRecorder?.start()
+            mediaRecorder?.maxAmplitude
 
             isRecording = true
-            measureAmplitudeSimple()
-            val interval = sharedPreferences.getLong("interval", MEASUREMENT_INTERVAL)
-            handler.postDelayed(measureRunnableSimple, interval)
+            handler.post(measureRunnableSimple)
         }
     }
 
     fun stop() {
         isRecording = false
         handler.removeCallbacks(measureRunnable)
-        handler.removeCallbacks(measureRunnableSimple)
-        audioRecord?.stop()
-        audioRecord?.release()
-        audioRecord = null
+        mediaRecorder?.stop()
+        mediaRecorder?.reset()
+        mediaRecorder?.release()
+        mediaRecorder = null
     }
 
     private fun measureAmplitude() {
-        val buffer = ShortArray(bufferSize)
-        val read = audioRecord?.read(buffer, 0, bufferSize)
-        if (read != null && read > 0) {
-            val amplitude = calculateAmplitude(buffer, read)
-            callback.onAmplitudeMeasured(amplitude)
-        }
+        val amplitude = mediaRecorder?.maxAmplitude ?: 0
+        val db = calculateAmplitude(amplitude)
+        callback.onAmplitudeMeasured(db)
     }
     private fun measureAmplitudeSimple() {
-        val buffer = ShortArray(bufferSize)
-        val read = audioRecord?.read(buffer, 0, bufferSize)
-        if (read != null && read > 0) {
-            val amplitude = calculateAmplitude(buffer, read)
-            callback.onAmplitudeMeasuredSimple(amplitude)
-        }
+        val amplitude = mediaRecorder?.maxAmplitude ?: 0
+        val db = calculateAmplitude(amplitude)
+        callback.onAmplitudeMeasuredSimple(db)
     }
 
-    private fun calculateAmplitude(buffer: ShortArray, readSize: Int): Double {
-        var sum = 0.0
-        for (i in 0 until readSize) {
-            sum += buffer[i] * buffer[i].toDouble()
-        }
-        val rms = Math.sqrt(sum / readSize)
-        val reference = 32767.0// Maximum value for a 16-bit PCM signal
+    private fun calculateAmplitude(maxAmplitude: Int): Double {
         var db = 0.0
-        if (rms > 0) {
-            db = Math.abs( 20 * Math.log10(rms / reference))
+        if (maxAmplitude > 0) {
+            db = abs(20 * log10(maxAmplitude.toDouble())) + offset
         }
-        Toast.makeText(context, db.toString() +" dB", Toast.LENGTH_LONG).show()
+        val dBString = String.format("%.2f", db)
+        Toast.makeText(context, dBString + " dB", Toast.LENGTH_SHORT).show()
         return db
-
     }
 
     interface AmplitudeCallback {
         fun onAmplitudeMeasured(amplitude: Double)
         fun onAmplitudeMeasuredSimple(amplitude: Double)
     }
+
 }

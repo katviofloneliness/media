@@ -2,11 +2,10 @@ package com.example.media
 
 import android.content.Context
 import android.media.MediaRecorder
+import android.media.audiofx.NoiseSuppressor
 import android.os.Build
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
+import android.widget.Toast
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -23,7 +22,9 @@ class AndroidAudioRecorder(
     }
 
     private var recorder: MediaRecorder? = null
-    private var samplingRate = 44100
+    private var noiseSuppressor: NoiseSuppressor? = null
+    private var samplingRate = 22050
+    private val offset = -20.0
     private fun createRecorder(): MediaRecorder {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             MediaRecorder(context)
@@ -45,6 +46,8 @@ class AndroidAudioRecorder(
     }
 
     override fun stop() {
+        noiseSuppressor?.enabled = false
+        noiseSuppressor?.release()
         recorder?.stop()
         recorder?.reset()
         recorder = null
@@ -54,18 +57,17 @@ class AndroidAudioRecorder(
         val database = FirebaseDatabase.getInstance()
         val amplitudeRef = database.getReference("amplitudes")
         val amplitudeKey = amplitudeRef.push().key
-        //recorder?.maxAmplitude
 
         val currentTime = System.currentTimeMillis()
         val amplitudeTime = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(currentTime))
-
-        var dB = abs (20 * log10(recorder?.maxAmplitude!!.toDouble() / samplingRate))
+        var dB = abs (20 * log10(recorder?.maxAmplitude!!.toDouble())) + offset
+        var dBString = String.format("%.2f", dB)
         val outcome = controllerDecisionModel.checkAmplitude(dB)
-        val amplitudeData = hashMapOf("amplitudeDB" to dB, "time" to amplitudeTime, "outcome" to outcome)
+        val amplitudeData = hashMapOf("amplitudeDB" to dBString, "time" to amplitudeTime, "outcome" to outcome)
         amplitudeKey?.let { key ->
             amplitudeRef.child(key).setValue(amplitudeData)
         }
-        //return recorder?.maxAmplitude.toString()
+        Toast.makeText(context, dBString, Toast.LENGTH_LONG).show()
 
         return dB
     }

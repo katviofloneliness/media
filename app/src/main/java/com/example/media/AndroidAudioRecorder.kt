@@ -12,6 +12,7 @@ import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlin.math.abs
 import kotlin.math.log10
 
 class AndroidAudioRecorder(
@@ -22,7 +23,7 @@ class AndroidAudioRecorder(
     }
 
     private var recorder: MediaRecorder? = null
-    private var samplingRate = 1
+    private var samplingRate = 44100
     private fun createRecorder(): MediaRecorder {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             MediaRecorder(context)
@@ -35,7 +36,7 @@ class AndroidAudioRecorder(
             setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
             setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
             setOutputFile(FileOutputStream(outputFile).fd)
-            //setAudioSamplingRate(samplingRate)
+            setAudioSamplingRate(samplingRate)
             prepare()
             start()
             recorder = this
@@ -58,7 +59,7 @@ class AndroidAudioRecorder(
         val currentTime = System.currentTimeMillis()
         val amplitudeTime = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(currentTime))
 
-        var dB = 20 * log10(recorder?.maxAmplitude!!.toDouble() / samplingRate)
+        var dB = abs (20 * log10(recorder?.maxAmplitude!!.toDouble() / samplingRate))
         val outcome = controllerDecisionModel.checkAmplitude(dB)
         val amplitudeData = hashMapOf("amplitudeDB" to dB, "time" to amplitudeTime, "outcome" to outcome)
         amplitudeKey?.let { key ->

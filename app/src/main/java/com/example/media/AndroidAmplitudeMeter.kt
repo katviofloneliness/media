@@ -4,6 +4,7 @@ import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.os.Handler
+import android.widget.Toast
 
 class AndroidAmplitudeMeter(private val context: Context, private val callback: AmplitudeCallback) {
 
@@ -13,7 +14,6 @@ class AndroidAmplitudeMeter(private val context: Context, private val callback: 
         private const val AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT
         private var MEASUREMENT_INTERVAL = 30000L
     }
-
     private val sharedPreferences = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
 
 
@@ -68,7 +68,6 @@ class AndroidAmplitudeMeter(private val context: Context, private val callback: 
                 MediaRecorder.AudioSource.MIC,
                 SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT, bufferSize
             )
-
             audioRecord?.startRecording()
 
             isRecording = true
@@ -110,11 +109,12 @@ class AndroidAmplitudeMeter(private val context: Context, private val callback: 
             sum += buffer[i] * buffer[i].toDouble()
         }
         val rms = Math.sqrt(sum / readSize)
-        val reference = 32767.0 // Maximum value for a 16-bit PCM signal
+        val reference = 32767.0// Maximum value for a 16-bit PCM signal
         var db = 0.0
         if (rms > 0) {
             db = Math.abs( 20 * Math.log10(rms / reference))
         }
+        Toast.makeText(context, db.toString() +" dB", Toast.LENGTH_LONG).show()
         return db
 
     }

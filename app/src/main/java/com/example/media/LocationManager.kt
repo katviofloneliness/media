@@ -186,7 +186,6 @@ class LocationManager(private val context: Context) {
             .addOnSuccessListener { response ->
                 for (placeLikelihood in response.placeLikelihoods) {
                     val place = placeLikelihood.place
-                    savePlaceTypeToFirebase(place)
                     checkPlaceTypeAndAdjustVolume(place)
                     Toast.makeText(
                         context.applicationContext,
@@ -235,29 +234,35 @@ class LocationManager(private val context: Context) {
         }
 
         val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-
+        var outcome: String
         when {
             // Set volume to 100% for high volume places
             isInHighVolumeBuilding -> {
                 controllerDND.disableDndMode()
                 setVolumeLevel(audioManager, 1.0f)
+                outcome = "High volume"
             }
             // Set volume to 50% for medium volume places
             isInMediumVolumeBuilding -> {
                 controllerDND.disableDndMode()
                 setVolumeLevel(audioManager, 0.5f)
+                outcome = "Medium volume"
             }
             // Set volume to silent for low volume places
             isInLowVolumeBuilding -> {
                 controllerDND.enableDndMode()
                 setVolumeLevel(audioManager, 0.0f)
+                outcome = "Low volume"
             }
             // Reset volume to 50% for unspecified places
             else -> {
                 controllerDND.disableDndMode()
                 setVolumeLevel(audioManager, 0.5f)
+                outcome = "High volume"
             }
         }
+        savePlaceTypeToFirebase(place, outcome)
+
     }
 
     fun setLocationInterval(interval: Long) {
@@ -275,7 +280,7 @@ class LocationManager(private val context: Context) {
         }
     }
 
-    private fun savePlaceTypeToFirebase(place: Place) {
+    private fun savePlaceTypeToFirebase(place: Place, outcome: String) {
         val databaseReference = FirebaseDatabase.getInstance().getReference("places")
 
         //val placeType = place.types.firstOrNull()
@@ -286,6 +291,7 @@ class LocationManager(private val context: Context) {
             val placeValues = HashMap<String, Any>()
             //placeValues["placeType"] = placeType.name
             placeValues["placeType"] = placeType.toString()
+            placeValues["outcome"] = outcome
 
             val currentTime = System.currentTimeMillis()
             val dateFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())

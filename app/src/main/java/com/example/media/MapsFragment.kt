@@ -22,21 +22,20 @@ class MapsFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Places.initialize(requireContext(),"AIzaSyDfYhFGAUAT97N405VnXl27My2zd6Oo1eY" )
+        Places.initialize(requireContext(), "AIzaSyDfYhFGAUAT97N405VnXl27My2zd6Oo1eY")
         locationManager = LocationManager(requireContext())
     }
+
     @SuppressLint("MissingPermission")
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        //view init
         var view: View = inflater.inflate(R.layout.fragment_maps, container, false)
-        // map fragment init
+        // Map fragment init
         val supportMapFragment =
             childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
-        //Places.initialize(requireContext(), "AIzaSyDfYhFGAUAT97N405VnXl27My2zd6Oo1eY")
         locationManager = LocationManager(requireContext())
         locationManager.startLocationUpdates()
 
@@ -50,7 +49,7 @@ class MapsFragment : Fragment() {
                 .addOnSuccessListener { location ->
                     location?.let {
                         val latLng = LatLng(location.latitude, location.longitude)
-                        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 12f))
+                        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 17f))
                         googleMap.addMarker(
                             MarkerOptions().position(latLng).title("Current Location")
                         )
@@ -58,20 +57,17 @@ class MapsFragment : Fragment() {
                 }
         }
 
-        //map
+        // Map
         supportMapFragment!!.getMapAsync { googleMap ->
-            googleMap.setOnMapClickListener { latLng -> //when map is clicked add pin
+            googleMap.setOnMapClickListener { latLng ->
+                // When map is clicked add pin
                 val markerOptions = MarkerOptions()
-                //val location = fusedLocationClient.lastLocation
-                //Toast.makeText(context, location, Toast.LENGTH_LONG).show()
                 markerOptions.position(latLng)
                 markerOptions.title(latLng.latitude.toString() + " " + latLng.longitude)
                 googleMap.clear()
-                googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 12f))
+                googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 17f))
                 googleMap.addMarker(markerOptions)
                 googleMap.isMyLocationEnabled = true
-/*                locationManager.startLocationUpdates()
-                locationManager.stopLocationUpdates()*/
             }
         }
 
@@ -103,11 +99,11 @@ class MapsFragment : Fragment() {
         }
     }
 
-/*    override fun onResume() {
-        super.onResume()
-        locationManager.startLocationUpdates()
-    }
-*/
+    /*    override fun onResume() {
+            super.onResume()
+            locationManager.startLocationUpdates()
+        }
+    */
     override fun onPause() {
         super.onPause()
         locationManager.stopLocationUpdates()

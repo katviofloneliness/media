@@ -59,15 +59,17 @@ class AndroidAudioRecorder(
         val amplitudeKey = amplitudeRef.push().key
 
         val currentTime = System.currentTimeMillis()
-        val amplitudeTime = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(currentTime))
-        var dB = abs (20 * log10(recorder?.maxAmplitude!!.toDouble())) + offset
-        var dBString = String.format("%.2f", dB)
+        val amplitudeTime =
+            SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(currentTime))
+        val dB = abs(20 * log10(recorder?.maxAmplitude!!.toDouble())) + offset
+        val dBString = String.format("%.2f", dB)
         val outcome = controllerDecisionModel.checkAmplitude(dB)
-        val amplitudeData = hashMapOf("amplitudeDB" to dBString, "time" to amplitudeTime, "outcome" to outcome)
+        val amplitudeData =
+            hashMapOf("amplitudeDB" to dBString, "time" to amplitudeTime, "outcome" to outcome)
         amplitudeKey?.let { key ->
             amplitudeRef.child(key).setValue(amplitudeData)
         }
-        Toast.makeText(context, dBString, Toast.LENGTH_LONG).show()
+        Toast.makeText(context, dBString, Toast.LENGTH_SHORT).show()
 
         return dB
     }

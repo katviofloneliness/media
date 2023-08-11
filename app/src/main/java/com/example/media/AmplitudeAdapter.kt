@@ -17,6 +17,7 @@ class AmplitudeAdapter(private val data: List<AmplitudeData>) :
         val amplitudeData = data[position]
         holder.Amplitude.text = amplitudeData.amplitude.toString() + " dB"
         holder.Time.text = amplitudeData.time
+        holder.Outcome.text = amplitudeData.outcome
     }
 
     override fun getItemCount(): Int {

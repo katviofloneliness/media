@@ -1,9 +1,6 @@
 import android.annotation.SuppressLint
 import android.content.Context
-import android.media.AudioFormat
-import android.media.AudioRecord
 import android.media.MediaRecorder
-import android.media.audiofx.AudioEffect
 import android.os.Handler
 import android.widget.Toast
 import kotlin.math.abs
@@ -59,6 +56,7 @@ class AndroidAmplitudeMeter(private val context: Context, private val callback: 
             handler.post(measureRunnable)
         }
     }
+
     fun startSimple() {
         if (!isRecording) {
             mediaRecorder = MediaRecorder()
@@ -93,6 +91,7 @@ class AndroidAmplitudeMeter(private val context: Context, private val callback: 
         val db = calculateAmplitude(amplitude)
         callback.onAmplitudeMeasured(db)
     }
+
     private fun measureAmplitudeSimple() {
         val amplitude = mediaRecorder?.maxAmplitude ?: 0
         val db = calculateAmplitude(amplitude)

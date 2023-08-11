@@ -10,18 +10,30 @@
     android:layout_marginBottom="8dp">
 
     <TextView
-        android:id="@+id/textView"
-        android:layout_width="match_parent"
+        android:id="@+id/textViewAmplitude"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Amplitude"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textViewOutcome"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Outcome"
+        app:layout_constraintStart_toEndOf="@id/textViewAmplitude"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBaseline_toBaselineOf="@id/textViewAmplitude"
+        android:layout_marginStart="32dp"/>
+
     <TextView
         android:id="@+id/textViewTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Time"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toEndOf="@id/textViewOutcome"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBaseline_toBaselineOf="@id/textViewAmplitude"
+        android:layout_marginStart="32dp"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

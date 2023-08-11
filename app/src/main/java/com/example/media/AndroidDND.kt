@@ -1,12 +1,12 @@
 package com.example.media
 
+import android.annotation.SuppressLint
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.media.AudioManager
 import android.os.Build
 import android.provider.Settings
-import android.widget.Toast
 
 
 class AndroidDND(
@@ -20,38 +20,38 @@ class AndroidDND(
 
     override fun checkPermissionDndMode(activity: MainActivity) {
         if (!notificationManager.isNotificationPolicyAccessGranted) {
-            //Toast.makeText(context, "perm bad", Toast.LENGTH_LONG).show()
             val intent = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
             activity.startActivity(intent)
             return
         }
-        //else Toast.makeText(context, "perm ok", Toast.LENGTH_LONG).show()
     }
 
+    @SuppressLint("ObsoleteSdkInt")
     override fun enableDndMode() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             notificationManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_NONE)
         } else {
             audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
         }
-        Toast.makeText(
-            context.applicationContext,
-            "Do Not Disturb mode enabled",
-            Toast.LENGTH_SHORT
-        ).show()
+        /*        Toast.makeText(
+                    context.applicationContext,
+                    "Do Not Disturb mode enabled",
+                    Toast.LENGTH_SHORT
+                ).show()*/
     }
 
+    @SuppressLint("ObsoleteSdkInt")
     override fun disableDndMode() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             notificationManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL)
         } else {
             audioManager.ringerMode = AudioManager.RINGER_MODE_NORMAL
         }
-        Toast.makeText(
-            context.applicationContext,
-            "Do Not Disturb mode disabled",
-            Toast.LENGTH_SHORT
-        ).show()
+        /*        Toast.makeText(
+                    context.applicationContext,
+                    "Do Not Disturb mode disabled",
+                    Toast.LENGTH_SHORT
+                ).show()*/
     }
 
 }

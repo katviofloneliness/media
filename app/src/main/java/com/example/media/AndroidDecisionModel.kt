@@ -2,10 +2,9 @@ package com.example.media
 
 import android.content.Context
 import android.media.AudioManager
-import android.widget.Toast
 
 class AndroidDecisionModel
-    (private val context: Context){
+    (private val context: Context) {
 
     private val thresholdDB: List<Double> = arrayListOf(50.0, 70.0, 90.0)
     private val controllerDND by lazy {
@@ -20,11 +19,13 @@ class AndroidDecisionModel
                 controllerDND.enableDndMode()
                 "Silent"
             }
+
             amplitudeDB <= thresholdDB[2] -> {
                 controllerDND.disableDndMode()
                 setVolumeLevel(audioManager, 0.5f)
                 "Medium"
             }
+
             else -> {
                 controllerDND.disableDndMode()
                 setVolumeLevel(audioManager, 1.0f)
@@ -42,6 +43,7 @@ class AndroidDecisionModel
                 setVolumeLevel(audioManager, 0.3f)
                 "Low volume"
             }
+
             else -> {
                 controllerDND.disableDndMode()
                 setVolumeLevel(audioManager, 0.7f)
@@ -51,22 +53,23 @@ class AndroidDecisionModel
     }
 
     private fun setVolumeLevel(audioManager: AudioManager, volumeLevel: Float) {
-/*        audioManager.ringerMode = if (volumeLevel == 0.0f) {
-            AudioManager.RINGER_MODE_SILENT
-        } else {
-            AudioManager.RINGER_MODE_NORMAL
-        }
+        /*        audioManager.ringerMode = if (volumeLevel == 0.0f) {
+                    AudioManager.RINGER_MODE_SILENT
+                } else {
+                    AudioManager.RINGER_MODE_NORMAL
+                }
 
-        val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_RING)
-        val newVolume = (maxVolume * volumeLevel).toInt()
-        audioManager.setStreamVolume(AudioManager.STREAM_RING, newVolume, 0)*/
+                val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_RING)
+                val newVolume = (maxVolume * volumeLevel).toInt()
+                audioManager.setStreamVolume(AudioManager.STREAM_RING, newVolume, 0)*/
 
         // Adjust Ringtone volume
         val maxRingVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_RING)
         val newRingVolume = (maxRingVolume * volumeLevel).toInt()
         audioManager.setStreamVolume(AudioManager.STREAM_RING, newRingVolume, 0)
         // Adjust Notification volume
-        val maxNotificationVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION)
+        val maxNotificationVolume =
+            audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION)
         val newNotificationVolume = (maxNotificationVolume * volumeLevel).toInt()
         audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, newNotificationVolume, 0)
         // Adjust Media volume
@@ -74,6 +77,7 @@ class AndroidDecisionModel
         val newMediaVolume = (maxMediaVolume * volumeLevel).toInt()
         audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newMediaVolume, 0)
     }
+
 }
 
 /*Noise intensity levels [dB]	Example source of sound

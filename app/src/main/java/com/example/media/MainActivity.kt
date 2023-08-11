@@ -5,10 +5,8 @@ import android.app.NotificationManager
 import android.content.Context
 import android.media.AudioManager
 import android.os.Bundle
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.fragment.app.Fragment
 import com.example.media.databinding.ActivityMainBinding
 import com.google.android.libraries.places.api.Places
@@ -56,7 +54,6 @@ class MainActivity : AppCompatActivity(), MainActivityCallback {
         //var path: String = cacheDir.path+"audio.mp3"
         //var mr = MediaRecorder()
 
-
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
@@ -73,19 +70,19 @@ class MainActivity : AppCompatActivity(), MainActivityCallback {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        replaceFragment(Sound())
+        replaceFragment(General())
 
         binding.bottomNavigationView.setOnItemSelectedListener {
             when (it.itemId) {
                 R.id.home_ampli -> replaceFragment(Home.newInstance(amplitudeList))
                 R.id.map -> replaceFragment(MapsFragment())
-                R.id.sound -> replaceFragment(Sound())
+                R.id.sound -> replaceFragment(General())
                 else -> {
                 }
             }
-            //amplitudeList.clear()
             true
         }
+
         /*record.setOnClickListener {
           mr.setAudioSource(MediaRecorder.AudioSource.MIC)
           mr.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
@@ -100,11 +97,15 @@ class MainActivity : AppCompatActivity(), MainActivityCallback {
                 amplitudeList.clear()
 
                 for (amplitudeSnapshot in dataSnapshot.children) {
-                    val amplitude = amplitudeSnapshot.child("amplitudeDB").getValue(String::class.java)
+                    val amplitude =
+                        amplitudeSnapshot.child("amplitudeDB").getValue(String::class.java)
                     val time = amplitudeSnapshot.child("time").getValue(String::class.java)
+                    val outcome = amplitudeSnapshot.child("outcome").getValue(String::class.java)
                     amplitude?.let { amp ->
                         time?.let { t ->
-                            amplitudeList.add(AmplitudeData(amp, t))
+                            outcome?.let {out ->
+                                amplitudeList.add(AmplitudeData(amp, t, out))
+                            }
                         }
                     }
                 }
@@ -113,10 +114,7 @@ class MainActivity : AppCompatActivity(), MainActivityCallback {
             override fun onCancelled(error: DatabaseError) {
                 TODO("Not yet implemented")
             }
-
         })
-
-
     }
 
     private fun replaceFragment(fragment: Fragment) {

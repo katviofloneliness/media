@@ -8,7 +8,6 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.coroutines.flow.merge
 
 class Home : Fragment() {
 
@@ -25,7 +24,11 @@ class Home : Fragment() {
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         val view = inflater.inflate(R.layout.fragment_home, container, false)
         val text = view.findViewById<TextView>(R.id.home_txt)
         val amplitudes = arguments?.getParcelableArray(ARG_AMPLITUDES) as? Array<AmplitudeData>?
@@ -34,7 +37,6 @@ class Home : Fragment() {
         if (amplitudes != null && amplitudes.isNotEmpty()) {
             recyclerView.adapter = AmplitudeAdapter(amplitudes.toList())
             recyclerView.layoutManager = LinearLayoutManager(context)
-            //text.text = amplitudes.joinToString(",") + "test"
         } else {
             text.text = "No amplitudes found"
         }

@@ -12,7 +12,6 @@ import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest
@@ -20,7 +19,6 @@ import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.firebase.database.FirebaseDatabase
 import java.text.SimpleDateFormat
 import java.util.Locale
-import kotlin.time.Duration.Companion.seconds
 
 class LocationManager(private val context: Context) {
     private val controllerDND by lazy {
@@ -132,7 +130,8 @@ class LocationManager(private val context: Context) {
 
 
     private var locationInterval = 30000L
-    private val sharedPreferences = context.getSharedPreferences("LocationPrefs", Context.MODE_PRIVATE)
+    private val sharedPreferences =
+        context.getSharedPreferences("LocationPrefs", Context.MODE_PRIVATE)
 
     // Initialize PlacesClient
     private val placesClient: PlacesClient = Places.createClient(context)
@@ -151,10 +150,10 @@ class LocationManager(private val context: Context) {
         locationInterval = sharedPreferences.getLong("interval", 30000L)
         if (ActivityCompat.checkSelfPermission(
                 context,
-                android.Manifest.permission.ACCESS_FINE_LOCATION
+                Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
                 context,
-                android.Manifest.permission.ACCESS_COARSE_LOCATION
+                Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             return
@@ -173,8 +172,6 @@ class LocationManager(private val context: Context) {
     private fun checkIfInBuilding(location: Location) {
         val placeFields = listOf(Place.Field.NAME, Place.Field.TYPES)
         val request = FindCurrentPlaceRequest.newInstance(placeFields)
-
-
         if (ActivityCompat.checkSelfPermission(
                 context,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -191,12 +188,6 @@ class LocationManager(private val context: Context) {
                     val place = placeLikelihood.place
                     savePlaceTypeToFirebase(place)
                     checkPlaceTypeAndAdjustVolume(place)
-                    // Handle the failure case if unable to fetch place details
-/*                    Toast.makeText(
-                        context.applicationContext,
-                        locationInterval.toString(),
-                        Toast.LENGTH_LONG
-                    ).show()*/
                     Toast.makeText(
                         context.applicationContext,
                         place.types.toString(),
@@ -207,8 +198,7 @@ class LocationManager(private val context: Context) {
                 controllerDND.disableDndMode()
             }
             .addOnFailureListener { exception ->
-                // Handle the failure case if unable to fetch place details
-                controllerDND.enableDndMode()
+                controllerDND.disableDndMode()
             }
     }
 
@@ -223,7 +213,8 @@ class LocationManager(private val context: Context) {
         val newRingVolume = (maxRingVolume * volumeLevel).toInt()
         audioManager.setStreamVolume(AudioManager.STREAM_RING, newRingVolume, 0)
         // Adjust Notification volume
-        val maxNotificationVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION)
+        val maxNotificationVolume =
+            audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION)
         val newNotificationVolume = (maxNotificationVolume * volumeLevel).toInt()
         audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, newNotificationVolume, 0)
         // Adjust Media volume
@@ -246,26 +237,30 @@ class LocationManager(private val context: Context) {
         val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
         when {
+            // Set volume to 100% for high volume places
             isInHighVolumeBuilding -> {
                 controllerDND.disableDndMode()
-                setVolumeLevel(audioManager, 1.0f) // Set volume to 100% for high volume places
+                setVolumeLevel(audioManager, 1.0f)
             }
+            // Set volume to 50% for medium volume places
             isInMediumVolumeBuilding -> {
                 controllerDND.disableDndMode()
-                setVolumeLevel(audioManager, 0.5f) // Set volume to 50% for medium volume places
+                setVolumeLevel(audioManager, 0.5f)
             }
+            // Set volume to silent for low volume places
             isInLowVolumeBuilding -> {
                 controllerDND.enableDndMode()
-                setVolumeLevel(audioManager, 0.0f) // Set volume to silent for low volume places
+                setVolumeLevel(audioManager, 0.0f)
             }
+            // Reset volume to 50% for unspecified places
             else -> {
                 controllerDND.disableDndMode()
-                setVolumeLevel(audioManager, 0.5f) // Reset volume to 50% for other places
+                setVolumeLevel(audioManager, 0.5f)
             }
         }
     }
 
-    fun setLocationInterval(interval: Long){
+    fun setLocationInterval(interval: Long) {
         locationInterval = interval
         sharedPreferences.edit().putLong("interval", interval).apply()
         //stopLocationUpdates()
@@ -279,6 +274,7 @@ class LocationManager(private val context: Context) {
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }
     }
+
     private fun savePlaceTypeToFirebase(place: Place) {
         val databaseReference = FirebaseDatabase.getInstance().getReference("places")
 

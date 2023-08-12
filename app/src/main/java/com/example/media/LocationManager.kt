@@ -131,7 +131,7 @@ class LocationManager(private val context: Context) {
 
     private var locationInterval = 30000L
     private val sharedPreferences =
-        context.getSharedPreferences("LocationPrefs", Context.MODE_PRIVATE)
+        context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
 
     // Initialize PlacesClient
     private val placesClient: PlacesClient = Places.createClient(context)
@@ -147,7 +147,7 @@ class LocationManager(private val context: Context) {
     }
 
     fun startLocationUpdates() {
-        locationInterval = sharedPreferences.getLong("interval", 30000L)
+        locationInterval = sharedPreferences.getLong("interval", locationInterval)
         if (ActivityCompat.checkSelfPermission(
                 context,
                 Manifest.permission.ACCESS_FINE_LOCATION

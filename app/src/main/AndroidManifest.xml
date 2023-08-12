@@ -37,10 +37,6 @@
             android:value="AIzaSyDfYhFGAUAT97N405VnXl27My2zd6Oo1eY" />
 
         <activity
-            android:name=".MapsFragment"
-            android:exported="false"
-            android:label="@string/title_activity_maps" />
-        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>

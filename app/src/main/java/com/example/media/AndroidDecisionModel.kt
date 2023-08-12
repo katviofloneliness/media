@@ -6,7 +6,7 @@ import android.media.AudioManager
 class AndroidDecisionModel
     (private val context: Context) {
 
-    private val thresholdDB: List<Double> = arrayListOf(50.0, 70.0, 90.0)
+    private val thresholdDB: List<Double> = arrayListOf(50.0, 70.0, 80.0)
     private val controllerDND by lazy {
         AndroidDND(context)
     }

@@ -188,8 +188,7 @@ class LocationManager(private val context: Context) {
                     val place = placeLikelihood.place
                     checkPlaceTypeAndAdjustVolume(place)
                     Toast.makeText(
-                        context.applicationContext,
-                        place.types.toString(),
+                        context.applicationContext, place.types.toString(),
                         Toast.LENGTH_LONG
                     ).show()
                     return@addOnSuccessListener
@@ -232,7 +231,6 @@ class LocationManager(private val context: Context) {
         val isInHighVolumeBuilding = place.types.any { type ->
             type in highVolumeList
         }
-
         val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         var outcome: String
         when {
@@ -262,7 +260,6 @@ class LocationManager(private val context: Context) {
             }
         }
         savePlaceTypeToFirebase(place, outcome)
-
     }
 
     fun setLocationInterval(interval: Long) {
@@ -297,7 +294,7 @@ class LocationManager(private val context: Context) {
             val dateFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
             val formattedTime = dateFormat.format(currentTime)
 
-            placeValues["requestTime"] = formattedTime // Save the formatted time
+            placeValues["requestTime"] = formattedTime
 
             val requestKey = databaseReference.push().key
             if (requestKey != null) {

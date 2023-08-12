@@ -5,6 +5,8 @@ import android.app.NotificationManager
 import android.content.Context
 import android.media.AudioManager
 import android.os.Bundle
+import android.os.PowerManager
+import android.os.PowerManager.WakeLock
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
@@ -35,6 +37,8 @@ class MainActivity : AppCompatActivity(), MainActivityCallback {
     private lateinit var notificationManager: NotificationManager
     private lateinit var audioManager: AudioManager
     private lateinit var binding: ActivityMainBinding
+    private lateinit var powerManager: PowerManager
+    private lateinit var wakeLock: WakeLock
 
     private var audioFile: File? = null
 
@@ -49,7 +53,8 @@ class MainActivity : AppCompatActivity(), MainActivityCallback {
         setContentView(R.layout.activity_main)
         FirebaseApp.initializeApp(this)
         Places.initialize(this, "AIzaSyDfYhFGAUAT97N405VnXl27My2zd6Oo1eY")
-
+        powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"media:WakeLockTag")
         //val record = findViewById<Button>(R.id.record1)
         //var path: String = cacheDir.path+"audio.mp3"
         //var mr = MediaRecorder()
@@ -57,13 +62,16 @@ class MainActivity : AppCompatActivity(), MainActivityCallback {
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
+
         ActivityCompat.requestPermissions(
             this, arrayOf(
                 Manifest.permission.RECORD_AUDIO,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Manifest.permission.ACCESS_COARSE_LOCATION,
                 Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_NOTIFICATION_POLICY
+                Manifest.permission.ACCESS_NOTIFICATION_POLICY,
+                Manifest.permission.WAKE_LOCK,
+                Manifest.permission.DISABLE_KEYGUARD
             ), REQUEST_CODE
         )
         controllerDND.checkPermissionDndMode(this)
@@ -155,6 +163,14 @@ class MainActivity : AppCompatActivity(), MainActivityCallback {
             player.stop()
         } catch (e: NullPointerException) {
         }
+    }
+    override fun onResume() {
+        super.onResume()
+        wakeLock.acquire(10*60*1000L /*10 minutes*/)
+    }
+    override fun onPause() {
+        super.onPause()
+        wakeLock.release()
     }
 
 }

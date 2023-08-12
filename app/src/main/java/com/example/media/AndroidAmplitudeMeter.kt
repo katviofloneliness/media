@@ -9,20 +9,23 @@ import kotlin.math.log10
 class AndroidAmplitudeMeter(private val context: Context, private val callback: AmplitudeCallback) {
 
     private val offset = -20.0
-    private var MEASUREMENT_INTERVAL = 60000L
-    private var MEASUREMENT_DURATION = 5000L
     private var mediaRecorder: MediaRecorder? = null
     private val handler = Handler()
 
     private val sharedPreferences = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+    private var MEASUREMENT_INTERVAL = sharedPreferences.getLong("interval", 60000L)
+    private var MEASUREMENT_DURATION = 10000L
     private var isRecording = false
 
 
     private val measureRunnable: Runnable = object : Runnable {
         override fun run() {
             if (isRecording) {
-                measureAmplitude()
                 val interval = sharedPreferences.getLong("interval", MEASUREMENT_INTERVAL)
+                handler.postDelayed({
+                    mediaRecorder?.maxAmplitude
+                }, interval - MEASUREMENT_DURATION)
+                measureAmplitude()
                 handler.postDelayed(this, interval)
             }
         }
@@ -33,6 +36,7 @@ class AndroidAmplitudeMeter(private val context: Context, private val callback: 
                 measureAmplitudeSimple()
                 val interval = sharedPreferences.getLong("interval", MEASUREMENT_INTERVAL)
                 handler.postDelayed(this, interval)
+
             }
         }
     }

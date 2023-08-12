@@ -109,7 +109,7 @@ class General : Fragment(), AndroidAmplitudeMeter.AmplitudeCallback {
             val newIntervalSeconds = it.toString().toLongOrNull()
             if (newIntervalSeconds != null) {
                 val newInterval = newIntervalSeconds * 1000
-                locationManager.setLocationInterval(newInterval)
+                //locationManager.setLocationInterval(newInterval)
                 // Save interval value in shared preferences
                 val sharedPreferences =
                     requireContext().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)

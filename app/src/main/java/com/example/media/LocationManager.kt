@@ -129,10 +129,10 @@ class LocationManager(private val context: Context) {
     )
 
 
-    private var locationInterval = 30000L
+
     private val sharedPreferences =
         context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
-
+    private var locationInterval = sharedPreferences.getLong("interval", 60000L)
     // Initialize PlacesClient
     private val placesClient: PlacesClient = Places.createClient(context)
     private val fusedLocationClient: FusedLocationProviderClient =
@@ -264,17 +264,19 @@ class LocationManager(private val context: Context) {
 
     fun setLocationInterval(interval: Long) {
         locationInterval = interval
-        sharedPreferences.edit().putLong("interval", interval).apply()
+        //sharedPreferences.edit().putLong("interval", interval).apply()
         //stopLocationUpdates()
         //startLocationUpdates()
     }
 
     private fun getLocationRequest(): LocationRequest {
-        return LocationRequest.create().apply {
-            interval = locationInterval
-            fastestInterval = locationInterval
-            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        }
+        return LocationRequest.Builder(LocationRequest.PRIORITY_HIGH_ACCURACY, locationInterval)
+            .setIntervalMillis(locationInterval)
+            .setMinUpdateIntervalMillis(locationInterval-1000)
+            .setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY)
+            .setMaxUpdateDelayMillis(100)
+
+            .build()
     }
 
     private fun savePlaceTypeToFirebase(place: Place, outcome: String) {

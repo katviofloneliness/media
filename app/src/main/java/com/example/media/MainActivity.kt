@@ -7,6 +7,7 @@ import android.media.AudioManager
 import android.os.Bundle
 import android.os.PowerManager
 import android.os.PowerManager.WakeLock
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
@@ -61,6 +62,8 @@ class MainActivity : AppCompatActivity(), MainActivityCallback {
 
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
 
         ActivityCompat.requestPermissions(
@@ -166,11 +169,12 @@ class MainActivity : AppCompatActivity(), MainActivityCallback {
     }
     override fun onResume() {
         super.onResume()
-        wakeLock.acquire(10*60*1000L /*10 minutes*/)
+        wakeLock.acquire()
     }
-    override fun onPause() {
-        super.onPause()
+    override fun onStop() {
+        super.onStop()
         wakeLock.release()
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
 }
